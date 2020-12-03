@@ -1,0 +1,7 @@
+node_modules
+.idea
+dist/game.js
+dist/game.js.map
+dist/assets/characters
+dist/assets/Christmas_Icon_Pack
+dist/assets/fonts
