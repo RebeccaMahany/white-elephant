@@ -1,4 +1,5 @@
 import 'phaser';
+import EnterGame from "./scenes/setup/EnterGame";
 import NameInput from "./scenes/setup/NameInput";
 import CharacterSelection from "./scenes/setup/CharacterSelection";
 import PresentsInput from "./scenes/setup/PresentsInput";
@@ -17,7 +18,7 @@ const config = {
     },
     width: width,
     height: height,
-    scene: [ NameInput, CharacterSelection, PresentsInput, GameWaitingRoom, GamePhase1, GamePhase2 ]
+    scene: [ EnterGame, NameInput, CharacterSelection, PresentsInput, GameWaitingRoom, GamePhase1, GamePhase2 ]
 };
 
 const game = new Phaser.Game(config);

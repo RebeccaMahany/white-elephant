@@ -1,5 +1,5 @@
 import 'phaser';
-import { createBanner, displayName, displayCharacter } from "./../SceneUtils";
+import { displayBanner, displayName, displayCharacter, displayError } from "./../SceneUtils";
 import { width, height } from "./../../globals";
 
 export default class PresentsInput extends Phaser.Scene
@@ -34,7 +34,7 @@ export default class PresentsInput extends Phaser.Scene
     create()
     {
         displayName(this, this.name);
-        createBanner(this);
+        displayBanner(this);
         displayCharacter(this, this.character);
 
         let prompt = this.add.text(
@@ -56,13 +56,36 @@ export default class PresentsInput extends Phaser.Scene
                 let firstPresentInput = event.target.previousElementSibling;
                 let secondPresentInput = firstPresentInput.previousElementSibling;
                 if (firstPresentInput.value !== '' && secondPresentInput.value !== '') {
-                    // TODO save presents
-                    this.scene.start('game-waiting-room', {
-                        character: this.character,
-                        name: this.name
-                    });
+                    this.submitPresents(firstPresentInput.value, secondPresentInput.value);
                 }
             }
         });
+    }
+
+    async submitPresents(firstPresent: string, secondPresent: string)
+    {
+        let postBody = {
+            'first_description': firstPresent,
+            'second_description': secondPresent
+        };
+        const response = await fetch('/ajax/create-presents', {
+            method: 'POST',
+            body: JSON.stringify(postBody),
+            headers: {'Content-Type': 'application/json; charset=UTF-8'}
+        });
+
+        if (!response.ok) {
+            let errMsgDetails = 'Unknown error occurred';
+            let errResponse = await response.json();
+            if (errResponse['error']) {
+                errMsgDetails = errResponse['error'];
+            }
+            displayError(this, 'Something went wrong --\ntry again?', errMsgDetails);
+        } else {
+            this.scene.start('game-waiting-room', {
+                character: this.character,
+                name: this.name
+            });
+        }
     }
 }

@@ -1,5 +1,5 @@
 import 'phaser';
-import { createBanner, displayName } from "./../SceneUtils";
+import { displayBanner, displayName } from "./../SceneUtils";
 import { width, height } from "./../../globals";
 
 export default class CharacterSelection extends Phaser.Scene
@@ -26,16 +26,16 @@ export default class CharacterSelection extends Phaser.Scene
 
         const playerFrameConfig = { frameWidth: 16, frameHeight: 17 };
         for (let i = 1; i <= 24; i++) {
-            const key = 'player' + i;
-            let src = 'assets/characters/' + key + '.png';
-            this.load.spritesheet(key, src, playerFrameConfig);
+            const playerKey = 'player' + i;
+            let src = 'assets/characters/' + playerKey + '.png';
+            this.load.spritesheet(playerKey, src, playerFrameConfig);
         }
     }
 
     create()
     {
         displayName(this, this.name);
-        createBanner(this);
+        displayBanner(this);
 
         let prompt = this.add.text(
             width/2,

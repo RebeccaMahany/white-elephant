@@ -1,7 +1,7 @@
 import 'phaser';
 import { width, height } from "./../globals";
 
-export function createBanner(scene: Phaser.Scene)
+export function displayBanner(scene: Phaser.Scene)
 {
     // Top text
     let gameNameHeader = scene.add.text(
@@ -33,7 +33,7 @@ export function displayName(scene: Phaser.Scene, name: string)
         name,
         {
             fontFamily: 'earlygameboy',
-            fontSize:'10px'
+            fontSize: '10px'
         }
     );
     displayedName.setOrigin(1);
@@ -43,4 +43,33 @@ export function displayCharacter(scene: Phaser.Scene, key: string)
 {
     let displayedCharacter = scene.add.sprite(15, height - 15, key);
     displayedCharacter.setOrigin(0);
+}
+
+export function displayError(scene: Phaser.Scene, message: string, details: string)
+{
+    let errorMsg = scene.add.text(
+        width/2,
+        height-200,
+        message,
+        {
+            fontFamily: 'earlygameboy',
+            fontSize: '18px',
+            color: '#ab263d'
+        }
+    );
+    errorMsg.setOrigin(0.5);
+
+    // Strip out the punctuation that looks kinda messy in this font
+    let formattedDetails = details.replace(/[\/#!$%\^&\*{}\[\]=\-_`~()]/g, '')
+    let detailsMsg = scene.add.text(
+        width/2,
+        height-150,
+        formattedDetails,
+        {
+            fontFamily: 'earlygameboy',
+            fontSize: '8px',
+            color: '#ab263d'
+        }
+    );
+    detailsMsg.setOrigin(0.5);
 }

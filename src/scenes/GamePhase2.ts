@@ -1,5 +1,5 @@
 import 'phaser';
-import { createBanner, displayName, displayCharacter } from "./SceneUtils";
+import { displayBanner, displayName, displayCharacter } from "./SceneUtils";
 import { width, height } from "./../globals";
 
 export default class GamePhase2 extends Phaser.Scene
@@ -35,7 +35,7 @@ export default class GamePhase2 extends Phaser.Scene
     create()
     {
         displayName(this, this.name);
-        createBanner(this);
+        displayBanner(this);
         displayCharacter(this, this.character);
 
         let waitingText = this.add.text(
