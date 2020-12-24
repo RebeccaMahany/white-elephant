@@ -5,6 +5,7 @@ use WhiteElephant\ApiException;
 use WhiteElephant\Route;
 use WhiteElephant\Endpoints\CreatePlayer;
 use WhiteElephant\Endpoints\CreatePresents;
+use WhiteElephant\Endpoints\EndTurn;
 use WhiteElephant\Endpoints\EnterGame;
 use WhiteElephant\Endpoints\GetCurrentPlayersAndPresents;
 use WhiteElephant\Endpoints\SetPlayerSprite;
@@ -43,6 +44,7 @@ $routes[] = new Route('/ajax/start-game', 'PUT', StartGame::class);
 // Game, phases 1 and 2
 $routes[] = new Route('/ajax/get-current', 'GET', GetCurrentPlayersAndPresents::class);
 $routes[] = new Route('/ajax/take-present', 'PUT', TakePresent::class);
+$routes[] = new Route('/ajax/end-turn', 'PUT', EndTurn::class);
 
 foreach ($routes as $route) {
     if ($requestMethod === $route->getHttpMethod() && $requestPath === $route->getPath()) {
@@ -85,8 +87,24 @@ foreach ($routes as $route) {
       @font-face {
         font-family: earlygameboy;
         src: url('assets/fonts/early_gameboy.ttf');
-        font-weight:400;
-        font-weight:normal;
+        font-weight: 400;
+        font-weight: normal;
+      }
+      button {
+        color: #555659;
+        font-family : inherit;
+        font-size: 1em;
+        background-color: #dde2eb;
+        border: none;
+        padding: 10px 16px;
+      }
+      button:disabled {
+        color: #78797d;
+        font-family : inherit;
+        font-size: 1em;
+        background-color: #ebedf0;
+        border: none;
+        padding: 10px 16px;
       }
     </style>
   </head>

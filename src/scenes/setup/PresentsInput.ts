@@ -6,6 +6,7 @@ export default class PresentsInput extends Phaser.Scene
 {
     name: string;
     character: string;
+    errorMessages: Phaser.GameObjects.Text[] = [];
 
     constructor()
     {

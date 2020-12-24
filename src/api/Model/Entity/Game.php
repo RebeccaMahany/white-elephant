@@ -10,14 +10,29 @@ class Game
     /** @var string */
     private $gameCode;
 
-    /** @var Player[] */
-    private $players;
+    /** @var int|null */
+    private $currentPlayerId;
 
-    /** @var Present[] */
-    private $presents;
+    /** @var int|null */
+    private $startTime;
 
     public function getId(): int
     {
         return $this->id;
+    }
+
+    public function getCurrentPlayerId(): ?int
+    {
+        return $this->currentPlayerId;
+    }
+
+    public function getStartTime(): ?int
+    {
+        return $this->startTime;
+    }
+
+    public function isStarted(): bool
+    {
+        return $this->startTime !== null && $this->startTime > 0;
     }
 }

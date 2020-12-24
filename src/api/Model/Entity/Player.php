@@ -10,7 +10,7 @@ class Player
     /** @var string */
     private $name;
 
-    /** @var string */
+    /** @var string|null */
     private $sprite;
 
     /** @var Present[] */
@@ -26,7 +26,7 @@ class Player
         return $this->name;
     }
 
-    public function getSprite(): string
+    public function getSprite(): ?string
     {
         return $this->sprite;
     }

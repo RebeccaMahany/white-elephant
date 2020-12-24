@@ -17,7 +17,11 @@ class Store
     public function getGame(string $gameCode): ?Game
     {
         $select = '
-            SELECT id, game_code
+            SELECT
+                id,
+                game_code AS gameCode,
+                current_player_id AS currentPlayerId,
+                start_time AS startTime
             FROM game
             WHERE game_code = :code;
         ';
@@ -25,6 +29,31 @@ class Store
         $conn = $this->getConnection();
         $stmt = $conn->prepare($select);
         $stmt->bindParam(':code', $gameCode);
+        $stmt->execute();
+        $stmt->setFetchMode(\PDO::FETCH_CLASS, Game::class);
+        $result = $stmt->fetch();
+        if (!$result) {
+            return null;
+        }
+
+        return $result;
+    }
+
+    public function getGameById(int $gameId): ?Game
+    {
+        $select = '
+            SELECT
+                id,
+                game_code AS gameCode,
+                current_player_id AS currentPlayerId,
+                start_time AS startTime
+            FROM game
+            WHERE id = :id;
+        ';
+
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare($select);
+        $stmt->bindParam(':id', $gameId);
         $stmt->execute();
         $stmt->setFetchMode(\PDO::FETCH_CLASS, Game::class);
         $result = $stmt->fetch();
@@ -94,7 +123,8 @@ class Store
         $select = '
             SELECT id, name, sprite
             FROM player
-            WHERE game_id = :game_id;
+            WHERE game_id = :game_id
+            ORDER BY id ASC;
         ';
 
         $conn = $this->getConnection();
@@ -117,7 +147,8 @@ class Store
                 present.description,
                 present.from_player_id AS fromPlayerId,
                 name AS fromPlayerName,
-                present.current_player_id AS currentPlayerId
+                present.current_player_id AS currentPlayerId,
+                present.unwrapped
             FROM present
             JOIN player ON present.from_player_id = player.id
             WHERE present.game_id = :game_id;
@@ -134,6 +165,93 @@ class Store
         }
 
         return $result;
+    }
+
+    public function getPresent(int $gameId, int $presentId): ?Present
+    {
+        $select = '
+            SELECT
+                present.id,
+                present.description,
+                present.from_player_id AS fromPlayerId,
+                name AS fromPlayerName,
+                present.current_player_id AS currentPlayerId,
+                present.unwrapped
+            FROM present
+            JOIN player ON present.from_player_id = player.id
+            WHERE present.id=:id
+            AND present.game_id = :game_id;
+        ';
+
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare($select);
+        $stmt->bindParam(':id', $presentId);
+        $stmt->bindParam(':game_id', $gameId);
+        $stmt->execute();
+        $stmt->setFetchMode(\PDO::FETCH_CLASS, Present::class);
+        $result = $stmt->fetch();
+        if (!$result) {
+            return null;
+        }
+
+        return $result;
+    }
+
+    public function setGameStartTime(int $gameId, int $startTime)
+    {
+        $update = '
+            UPDATE game SET start_time=:time WHERE id=:id
+        ';
+
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare($update);
+        $stmt->bindParam(':time', $startTime);
+        $stmt->bindParam(':id', $gameId);
+        $stmt->execute();
+    }
+
+    public function setCurrentPlayer(int $gameId, int $playerId)
+    {
+        $update = '
+            UPDATE game SET current_player_id=:player_id WHERE id=:id
+        ';
+
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare($update);
+        $stmt->bindParam(':player_id', $playerId);
+        $stmt->bindParam(':id', $gameId);
+        $stmt->execute();
+    }
+
+    public function setPresentOwner(int $gameId, int $playerId, int $presentId)
+    {
+        $update = '
+            UPDATE present SET current_player_id=:player_id
+            WHERE id=:id
+            AND game_id=:game_id;
+        ';
+
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare($update);
+        $stmt->bindParam(':player_id', $playerId);
+        $stmt->bindParam(':id', $presentId);
+        $stmt->bindParam(':game_id', $gameId);
+        $stmt->execute();
+    }
+
+    public function setPresentUnwrapped(int $gameId, int $presentId)
+    {
+        $update = '
+            UPDATE present SET unwrapped=True
+            WHERE id=:id
+            AND game_id=:game_id;
+        ';
+
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare($update);
+        $stmt->bindParam(':id', $presentId);
+        $stmt->bindParam(':game_id', $gameId);
+        $stmt->execute();
     }
 
     private function getConnection(): \PDO

@@ -14,8 +14,6 @@ class SetPlayerSprite extends ApiRequest
             throw new ApiException(400, 'missing sprite parameter');
         }
 
-        error_log($this->requestBody['sprite']);
-
         $store = new Store();
         $firstPresentId = $store->setPlayerSprite($this->requestBody['sprite'], $playerId, $gameId);
 

@@ -19,6 +19,9 @@ class Present
     /** @var int */
     private $currentPlayerId;
 
+    /** @var bool */
+    private $unwrapped;
+
     public function getId(): int
     {
         return $this->id;
@@ -42,5 +45,10 @@ class Present
     public function getCurrentPlayerId(): int
     {
         return $this->currentPlayerId;
+    }
+
+    public function isUnwrapped(): bool
+    {
+        return $this->unwrapped;
     }
 }

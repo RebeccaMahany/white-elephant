@@ -45,11 +45,11 @@ export function displayCharacter(scene: Phaser.Scene, key: string)
     displayedCharacter.setOrigin(0);
 }
 
-export function displayError(scene: Phaser.Scene, message: string, details: string)
+export function displayError(scene, message: string, details: string)
 {
     let errorMsg = scene.add.text(
         width/2,
-        height-200,
+        height-100,
         message,
         {
             fontFamily: 'earlygameboy',
@@ -63,7 +63,7 @@ export function displayError(scene: Phaser.Scene, message: string, details: stri
     let formattedDetails = details.replace(/[\/#!$%\^&\*{}\[\]=\-_`~()]/g, '')
     let detailsMsg = scene.add.text(
         width/2,
-        height-150,
+        height-50,
         formattedDetails,
         {
             fontFamily: 'earlygameboy',
@@ -72,4 +72,15 @@ export function displayError(scene: Phaser.Scene, message: string, details: stri
         }
     );
     detailsMsg.setOrigin(0.5);
+
+    scene.errorMessages.push(errorMsg);
+    scene.errorMessages.push(detailsMsg);
+}
+
+export function clearErrors(scene)
+{
+    for (let i = scene.errorMessages.length - 1; i >= 0; i--) {
+        scene.errorMessages[i].destroy();
+    }
+    scene.errorMessages = [];
 }

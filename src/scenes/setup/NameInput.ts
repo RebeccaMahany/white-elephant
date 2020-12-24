@@ -5,6 +5,8 @@ import { width, height } from "./../../globals";
 
 export default class NameInput extends Phaser.Scene
 {
+    errorMessages: Phaser.GameObjects.Text[] = [];
+
     constructor()
     {
         super('name-input');

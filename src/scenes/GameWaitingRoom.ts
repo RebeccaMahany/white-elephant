@@ -1,11 +1,12 @@
 import 'phaser';
-import { displayBanner, displayName, displayCharacter } from "./SceneUtils";
+import { displayBanner, displayName, displayCharacter, displayError } from "./SceneUtils";
 import { width, height } from "./../globals";
 
 export default class GameWaitingRoom extends Phaser.Scene
 {
     name: string;
     character: string;
+    errorMessages: Phaser.GameObjects.Text[] = [];
     addedOtherPlayerIds: number[] = [];
     addedPresentIds: number[] = [];
     currentPopoverElements: Phaser.GameObjects.GameObject[] = [];
@@ -80,10 +81,7 @@ export default class GameWaitingRoom extends Phaser.Scene
         form.addListener('click');
         form.on('click', (event) => {
             if (event.target.name === 'submitButton') {
-                this.scene.start('game-phase-1', {
-                    character: this.character,
-                    name: this.name
-                });
+                this.startGame();
             }
         });
     }
@@ -95,9 +93,18 @@ export default class GameWaitingRoom extends Phaser.Scene
         if (response.ok) {
             let jsonResponse = await response.json();
 
+            // First, check to see if the game has started because someone else clicked the start button
+            if (jsonResponse['is_started'] === true) {
+                this.scene.start('game-phase-1', {
+                    character: this.character,
+                    name: this.name
+                });
+                return;
+            }
+
             // Add all the players
             for (let i = 0; i < jsonResponse['players'].length; i++) {
-                if (jsonResponse['players'][i]['current'] === true) {
+                if (jsonResponse['players'][i]['is_me'] === true) {
                     // We don't need to display the current character -- they're in the botton left already
                     continue;
                 }
@@ -141,7 +148,6 @@ export default class GameWaitingRoom extends Phaser.Scene
         }
 
         let h = height/3 + (yStep * Math.floor(this.addedOtherPlayerIds.length/2));
-
         let displayedCharacter = this.add.sprite(w, h, sprite);
         displayedCharacter.setOrigin(o);
 
@@ -235,5 +241,27 @@ export default class GameWaitingRoom extends Phaser.Scene
             }
             this.currentPopoverElements = [];
         });
+    }
+
+    async startGame()
+    {
+        const response = await fetch('/ajax/start-game', {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json; charset=UTF-8'}
+        });
+
+        if (!response.ok) {
+            let errMsgDetails = 'Unknown error occurred';
+            let errResponse = await response.json();
+            if (errResponse['error']) {
+                errMsgDetails = errResponse['error'];
+            }
+            displayError(this, 'Something went wrong --\ntry again?', errMsgDetails);
+        } else {
+            this.scene.start('game-phase-1', {
+                character: this.character,
+                name: this.name
+            });
+        }
     }
 }

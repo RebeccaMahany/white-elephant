@@ -4,6 +4,8 @@ import { width, height } from "./../../globals";
 
 export default class EnterGame extends Phaser.Scene
 {
+    errorMessages: Phaser.GameObjects.Text[] = [];
+
     constructor()
     {
         super('enter-game');

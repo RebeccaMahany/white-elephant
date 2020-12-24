@@ -5,6 +5,7 @@ import { width, height } from "./../../globals";
 export default class CharacterSelection extends Phaser.Scene
 {
     name: string;
+    errorMessages: Phaser.GameObjects.Text[] = [];
 
     constructor()
     {

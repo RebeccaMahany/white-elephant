@@ -1,24 +1,28 @@
 CREATE TABLE game (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     game_code TEXT,
-    UNIQUE(game_code)
+    current_player_id INTEGER,
+    start_time TIMESTAMP,
+    UNIQUE(game_code),
+    FOREIGN KEY(current_player_id) REFERENCES player(id)
 );
 
 CREATE TABLE player (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT,
+    name TEXT NOT NULL,
     sprite TEXT,
-    game_id INTEGER,
+    game_id INTEGER NOT NULL,
     UNIQUE(name, game_id),
     FOREIGN KEY(game_id) REFERENCES game(id)
 );
 
 CREATE TABLE present (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    description TEXT,
-    from_player_id INTEGER,
-    current_player_id INTEGER,
-    game_id INTEGER,
+    description TEXT NOT NULL,
+    from_player_id INTEGER NOT NULL,
+    current_player_id INTEGER NOT NULL,
+    unwrapped BOOLEAN DEFAULT FALSE,
+    game_id INTEGER NOT NULL,
     UNIQUE(description, from_player_id, game_id),
     FOREIGN KEY(game_id) REFERENCES game(id),
     FOREIGN KEY(from_player_id) REFERENCES player(id),
