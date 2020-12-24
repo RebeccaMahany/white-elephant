@@ -112,6 +112,10 @@ export default class GameWaitingRoom extends Phaser.Scene
                     // Already added this player in a previous iteration
                     continue;
                 }
+                if (jsonResponse['players'][i]['sprite'] === null) {
+                    // Player has entered their name but not chosen their character yet, so we can't display them
+                    continue;
+                }
 
                 this.displayCharacterInNextSpot(jsonResponse['players'][i]['sprite'], jsonResponse['players'][i]['name']);
                 this.addedOtherPlayerIds.push(jsonResponse['players'][i]['id']);

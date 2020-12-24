@@ -98,7 +98,8 @@ foreach ($routes as $route) {
         border: none;
         padding: 10px 16px;
       }
-      button:disabled {
+      button:disabled,
+      button[disabled] {
         color: #78797d;
         font-family : inherit;
         font-size: 1em;
