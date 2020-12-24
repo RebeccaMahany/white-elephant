@@ -19,6 +19,10 @@ class EnterGame extends ApiRequest
         if ($game === null) {
             throw new ApiException(404, 'game not found by code');
         }
+        $currentPlayerCount = $store->getPlayerCount($game->getId());
+        if ($currentPlayerCount >= 9) {
+            throw new ApiException(400, 'Game already has the maximum number of players');
+        }
 
         $this->setGameId($game->getId());
 

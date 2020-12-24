@@ -118,6 +118,26 @@ class Store
         $stmt->execute();
     }
 
+    public function getPlayerCount(int $gameId): int
+    {
+        $select = '
+            SELECT COUNT(1)
+            FROM player
+            WHERE game_id = :game_id;
+        ';
+
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare($select);
+        $stmt->bindParam(':game_id', $gameId);
+        $stmt->execute();
+        $result = $stmt->fetchColumn();
+        if (!$result) {
+            return 0;
+        }
+
+        return $result;
+    }
+
     public function getAllPlayers(int $gameId): array
     {
         $select = '

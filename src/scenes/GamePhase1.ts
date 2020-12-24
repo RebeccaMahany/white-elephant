@@ -101,15 +101,23 @@ export default class GamePhase1 extends Phaser.Scene
             const leftX = 15;
             const rightX = width - 15;
             const yStep = 150;
+            let seenCurrentPlayer = false;
             for (let i = 0; i < jsonResponse['players'].length; i++) {
                 if (jsonResponse['players'][i]['is_me'] === true) {
                     // We don't need to display the current character -- they're in the botton left already
+                    seenCurrentPlayer = true;
                     continue;
+                }
+
+                let idx = i;
+                if (seenCurrentPlayer) {
+                    // Move back one slot to account for not having to display the current player
+                    idx--;
                 }
 
                 let w;
                 let o;
-                if (i % 2 === 0) {
+                if (idx % 2 === 0) {
                     w = leftX;
                     o = 0; // left-align
                 } else {
@@ -117,7 +125,7 @@ export default class GamePhase1 extends Phaser.Scene
                     o = 1; // right-align
                 }
 
-                let h = height/3 + (yStep * Math.floor(i/2));
+                let h = height/3 + (yStep * Math.floor(idx/2));
 
                 let displayedCharacter = this.add.sprite(w, h, jsonResponse['players'][i]['sprite']);
                 displayedCharacter.setOrigin(o);

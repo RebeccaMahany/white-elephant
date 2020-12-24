@@ -22,7 +22,7 @@ class TakePresent extends ApiRequest
         if ($present === null) {
             throw new ApiException(404, 'no present found by present_id');
         }
-        if ($present->getCurrentPlayerId() === (int)$playerId) {
+        if ($present->getCurrentPlayerId() === (int)$playerId && $present->isUnwrapped()) {
             throw new ApiException(400, 'player already has present');
         }
 
