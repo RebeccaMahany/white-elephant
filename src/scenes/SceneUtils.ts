@@ -41,7 +41,7 @@ export function displayName(scene: Phaser.Scene, name: string)
 
 export function displayCharacter(scene: Phaser.Scene, key: string)
 {
-    let displayedCharacter = scene.add.sprite(15, height - 15, key);
+    let displayedCharacter = scene.add.sprite(10, height - 30, key);
     displayedCharacter.setOrigin(0);
 }
 

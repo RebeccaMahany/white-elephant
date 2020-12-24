@@ -8,6 +8,8 @@ export default class GamePhase1 extends Phaser.Scene
     character: string;
     errorMessages: Phaser.GameObjects.Text[] = [];
     myTurn: boolean = false;
+    myPlayerId: number;
+    myGrid: Map<number, number> = new Map<number, number>();
     allowedToTakePresent: boolean = false;
     timeLeftObj = null;
     currentPlayerId = null;
@@ -17,6 +19,7 @@ export default class GamePhase1 extends Phaser.Scene
     endTurnButton: Phaser.GameObjects.DOMElement = null;
     diceObj: Phaser.GameObjects.Text = null;
     presentObjs: Map<number, Phaser.GameObjects.Image> = new Map<number, Phaser.GameObjects.Image>();
+    playerObjs: Map<number, Phaser.GameObjects.Sprite> = new Map<number, Phaser.GameObjects.Sprite>();
 
     constructor()
     {
@@ -49,7 +52,6 @@ export default class GamePhase1 extends Phaser.Scene
         }
 
         this.load.html('roll-button', 'assets/html/roll-button.html');
-        this.load.html('disabled-roll-button', 'assets/html/disabled-roll-button.html');
         this.load.html('end-turn-button', 'assets/html/end-turn-button.html');
     }
 
@@ -98,13 +100,14 @@ export default class GamePhase1 extends Phaser.Scene
             }
 
             // Add all the players
-            const leftX = 15;
-            const rightX = width - 15;
+            const leftX = 10;
+            const rightX = width - 10;
             const yStep = 150;
             let seenCurrentPlayer = false;
             for (let i = 0; i < jsonResponse['players'].length; i++) {
                 if (jsonResponse['players'][i]['is_me'] === true) {
                     // We don't need to display the current character -- they're in the botton left already
+                    this.myPlayerId = jsonResponse['players'][i]['id'];
                     seenCurrentPlayer = true;
                     continue;
                 }
@@ -129,6 +132,9 @@ export default class GamePhase1 extends Phaser.Scene
 
                 let displayedCharacter = this.add.sprite(w, h, jsonResponse['players'][i]['sprite']);
                 displayedCharacter.setOrigin(o);
+                displayedCharacter.setData('side', o === 0 ? 'left' : 'right');
+                displayedCharacter.setData('presents-grid', new Map<number, number>());
+                this.playerObjs.set(jsonResponse['players'][i]['id'], displayedCharacter);
 
                 // Display the player's name under the player.
                 let nameText = this.add.text(
@@ -137,7 +143,7 @@ export default class GamePhase1 extends Phaser.Scene
                     jsonResponse['players'][i]['name'],
                     {
                         fontFamily: 'earlygameboy',
-                        fontSize: '10px'
+                        fontSize: '8px'
                     }
                 );
                 nameText.setOrigin(o);
@@ -185,7 +191,7 @@ export default class GamePhase1 extends Phaser.Scene
 
             this.myTurn = jsonResponse['my_turn'];
 
-            // Update info about presents and move them around as necessary
+            // Update info about presents
             for (let i = 0; i < jsonResponse['presents'].length; i++) {
                 let p = jsonResponse['presents'][i];
 
@@ -193,8 +199,24 @@ export default class GamePhase1 extends Phaser.Scene
                 if (this.presentObjs.get(p['id']).getData('unwrapped') === false && p['unwrapped'] === true) {
                     this.presentObjs.get(p['id']).setData('unwrapped', true);
                 }
+            }
 
-                // TODO update location of present
+            // Move presents to be next to the players who now own them
+            for (let i = 0; i < jsonResponse['players'].length; i++) {
+                let p = jsonResponse['players'][i];
+
+                if (p['presents'].length > 0) {
+                    for (let j = 0; j < p['presents'].length; j++) {
+                        if (p['presents'][j]['unwrapped']) {
+                            let presentId = p['presents'][j]['id'];
+                            if (p['id'] == this.myPlayerId) {
+                                this.displayPresentInNextPositionForCurrentPlayer(presentId);
+                            } else {
+                                this.displayPresentInNextPositionForPlayer(p['id'], presentId);
+                            }
+                        }
+                    }
+                }
             }
 
             // If turn has advanced, update text and redraw or remove buttons
@@ -233,7 +255,7 @@ export default class GamePhase1 extends Phaser.Scene
         }
 
         let timeLeft = this.add.text(
-            200,
+            width/2,
             120,
             displayText,
             {
@@ -253,7 +275,7 @@ export default class GamePhase1 extends Phaser.Scene
         }
 
         this.currentPlayerNameObj = this.add.text(
-            200,
+            width/2,
             150,
             this.myTurn ? 'Your turn' : currentPlayerName + "'s turn",
             {
@@ -266,7 +288,7 @@ export default class GamePhase1 extends Phaser.Scene
 
     displayRollDiceButton()
     {
-        this.rollButton = this.add.dom(width/3, height/4).createFromCache('roll-button');
+        this.rollButton = this.add.dom(width/2, height/4).createFromCache('roll-button');
         this.rollButton.addListener('click');
         this.rollButton.on('click', (event) => {
             this.rollDice();
@@ -275,10 +297,12 @@ export default class GamePhase1 extends Phaser.Scene
 
     rollDice()
     {
+        this.rollButton.destroy(); // Remove the roll button so we can put the text there instead
+        this.rollButton = null;
         // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random#Getting_a_random_integer_between_two_values
         let num = Math.floor(Math.random() * (6)) + 1;
         this.diceObj = this.add.text(
-            2*width/3,
+            width/2,
             height/4 - 20,
             num.toString(),
             {
@@ -292,18 +316,11 @@ export default class GamePhase1 extends Phaser.Scene
         } else {
             this.allowedToTakePresent = true;
         }
-        this.disableRollButton();
-    }
-
-    disableRollButton()
-    {
-        this.rollButton.destroy();
-        this.rollButton = this.add.dom(width/3, height/4).createFromCache('disabled-roll-button');
     }
 
     displayEndTurnButton()
     {
-        this.endTurnButton = this.add.dom(width/3, height/4 + 60).createFromCache('end-turn-button');
+        this.endTurnButton = this.add.dom(width/2, height/4 + 60).createFromCache('end-turn-button');
         this.endTurnButton.addListener('click');
         this.endTurnButton.on('click', (event) => {
             this.endTurn();
@@ -358,7 +375,16 @@ export default class GamePhase1 extends Phaser.Scene
         const buttonWidthHeight = 10;
         const buttonPadding = 4;
 
-        let popover = this.add.rectangle(pointer.x, pointer.y, popoverWidth, popoverHeight, 0x222222, 0.5);
+        let startX = pointer.x;
+        let startY = pointer.y;
+        if (gameObject.getData('side') === 'right') {
+            // For presents on the right side of the screen only we want to popover to go to the left of the cursor, not the right
+            startX = pointer.x - popoverWidth;
+        } else if (gameObject.getData('side') === 'bottom') {
+            startY = pointer.y - popoverHeight;
+        }
+
+        let popover = this.add.rectangle(startX, startY, popoverWidth, popoverHeight, 0x222222, 0.5);
         popover.setDisplayOrigin(0, 0);
 
         let content = this.add.text(
@@ -373,9 +399,15 @@ export default class GamePhase1 extends Phaser.Scene
         let b = content.getBounds();
         content.setPosition(popover.x + (popoverWidth / 2) - (b.width / 2), popover.y + (popoverHeight / 2) - (b.height / 2));
 
+        let buttonX = pointer.x + popoverWidth - buttonWidthHeight - buttonPadding;
+        let buttonY = pointer.y + buttonPadding;
+        if (gameObject.getData('side') === 'bottom') {
+            buttonY = pointer.y - buttonWidthHeight - buttonPadding;
+        }
+
         let closeButton = this.add.rectangle(
-            pointer.x + popoverWidth - buttonWidthHeight - buttonPadding,
-            pointer.y + buttonPadding,
+            buttonX,
+            buttonY,
             buttonWidthHeight,
             buttonWidthHeight,
             0x222222,
@@ -481,5 +513,99 @@ export default class GamePhase1 extends Phaser.Scene
         });
 
         return allowed;
+    }
+
+    /**
+     * For players on the left and right of the screen, display their presents in a 3x6 grid.
+     */
+    displayPresentInNextPositionForPlayer(playerId: number, presentId: number)
+    {
+        this.removePresentFromAllOtherGrids(presentId);
+
+        const maxNumPresents = 18; // We have a max of 9 players, and 2 presents per player
+        const presentGridWidth = 3;
+        const cellWidthHeight = 30;
+        const sideBuffer = 75;
+
+        // Find the first empty cell, put the present in it, and get coordinates
+        for (let cellNum = 0; cellNum < maxNumPresents; cellNum++) {
+            let player = this.playerObjs.get(playerId);
+            let grid = player.getData('presents-grid');
+            if (grid.has(cellNum)) {
+                continue;
+            }
+
+            // Set the present in the cell
+            grid.set(cellNum, presentId);
+            this.playerObjs.get(playerId).setData('presents-grid', grid);
+
+            const rowNum = Math.floor(cellNum/presentGridWidth);
+            const colNum = cellNum % presentGridWidth;
+
+            let w;
+            let h;
+            if (this.playerObjs.get(playerId).getData('side') === 'left') {
+                w = sideBuffer + (colNum * cellWidthHeight);
+                h = this.playerObjs.get(playerId).getTopRight().y + (rowNum * cellWidthHeight);
+            } else {
+                w = width - sideBuffer - (colNum * cellWidthHeight);
+                h = this.playerObjs.get(playerId).getTopLeft().y + (rowNum * cellWidthHeight);
+            }
+            this.presentObjs.get(presentId).setPosition(w, h);
+            this.presentObjs.get(presentId).setData('side', this.playerObjs.get(playerId).getData('side'));
+            break;
+        }
+    }
+
+    /**
+     * For the current player, we display a 3x6 grid along the bottom
+     */
+    displayPresentInNextPositionForCurrentPlayer(presentId: number)
+    {
+        this.removePresentFromAllOtherGrids(presentId);
+        const startX = 40;
+        const startY = height - 30;
+        const cellWidthHeight = 30;
+        const presentGridWidth = 6;
+        const maxNumPresents = 18; // We have a max of 9 players, and 2 presents per player
+
+        for (let cellNum = 0; cellNum < maxNumPresents; cellNum++) {
+            if (this.myGrid.has(cellNum)) {
+                continue;
+            }
+
+            // Set the present in the cell
+            this.myGrid.set(cellNum, presentId);
+
+            const rowNum = Math.floor(cellNum/presentGridWidth);
+            const colNum = cellNum % presentGridWidth;
+
+            let w = startX + (colNum * cellWidthHeight);
+            let h = startY - (rowNum * cellWidthHeight);
+
+            this.presentObjs.get(presentId).setPosition(w, h);
+            this.presentObjs.get(presentId).setData('side', 'bottom');
+            break;
+        }
+    }
+
+    removePresentFromAllOtherGrids(presentId: number)
+    {
+        this.playerObjs.forEach((value: Phaser.GameObjects.Sprite, playerId: number) => {
+            let grid = value.getData('presents-grid');
+            grid.forEach((value: number, cellNum: number) => {
+                if (value === presentId) {
+                    grid.delete(cellNum);
+                }
+            });
+            this.playerObjs.get(playerId).setData('presents-grid', grid);
+        });
+
+        this.myGrid.forEach((value: number, cellNum: number) => {
+            if (value === presentId) {
+                this.myGrid.delete(cellNum);
+
+            }
+        });
     }
 }
