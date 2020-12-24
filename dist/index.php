@@ -80,7 +80,7 @@ foreach ($routes as $route) {
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8">
+    <meta charset="utf-8" name="viewport" content="width=480, height=800, user-scalable=no, maximum-scale=0.8">
     <script src="game.js"></script>
 
     <style media='screen' type='text/css'>

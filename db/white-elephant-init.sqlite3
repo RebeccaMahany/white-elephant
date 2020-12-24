@@ -21,7 +21,7 @@ CREATE TABLE present (
     description TEXT NOT NULL,
     from_player_id INTEGER NOT NULL,
     current_player_id INTEGER NOT NULL,
-    unwrapped BOOLEAN DEFAULT FALSE,
+    unwrapped BOOLEAN DEFAULT 0,
     game_id INTEGER NOT NULL,
     UNIQUE(description, from_player_id, game_id),
     FOREIGN KEY(game_id) REFERENCES game(id),

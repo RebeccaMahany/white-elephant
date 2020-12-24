@@ -262,7 +262,7 @@ class Store
     public function setPresentUnwrapped(int $gameId, int $presentId)
     {
         $update = '
-            UPDATE present SET unwrapped=True
+            UPDATE present SET unwrapped=1
             WHERE id=:id
             AND game_id=:game_id;
         ';
