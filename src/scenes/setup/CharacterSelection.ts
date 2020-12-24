@@ -1,5 +1,5 @@
 import 'phaser';
-import { displayBanner, displayName } from "./../SceneUtils";
+import { displayBanner, displayName, displayError } from "./../SceneUtils";
 import { width, height } from "./../../globals";
 
 export default class CharacterSelection extends Phaser.Scene
@@ -55,29 +55,44 @@ export default class CharacterSelection extends Phaser.Scene
         const stepY = 64;
         for (let y = 0; y < 4; y ++) {
             for (let x = 0; x < 6; x++) {
-                let playerNum = (y+1) * (x+1);
+                let playerNum = (y*6) + x + 1;
 
                 // Create the option and make it interactive
-                var player = this.add.sprite(startX, startY, 'player' + playerNum).setInteractive();
-                // Make player bigger on hover
-                player.on('pointerover', function () {
-                    this.setScale(2);
-                });
-                player.on('pointerout', function () {
-                    this.setScale(1);
-                });
-                // Select player on click
-                player.on('pointerdown', function() {
-                    let selectedPlayerKey = this.texture.key;
-                    this.scene.scene.start('presents-input', {
-                        character: selectedPlayerKey,
-                        name: this.scene.name
-                    });
-                }, player);
+                this.add.sprite(startX, startY, 'player' + playerNum).setInteractive();
                 startX += stepX;
             }
             startX = 64;
             startY += stepY;
+        }
+
+        this.input.on('gameobjectdown', (pointer, gameObject) => {
+            this.setPlayerSprite(gameObject.texture.key);
+        });
+    }
+
+    async setPlayerSprite(sprite: string)
+    {
+        let putBody = {
+            'sprite': sprite
+        };
+        const response = await fetch('/ajax/set-player-sprite', {
+            method: 'PUT',
+            body: JSON.stringify(putBody),
+            headers: {'Content-Type': 'application/json; charset=UTF-8'}
+        });
+
+        if (!response.ok) {
+            let errMsgDetails = 'Unknown error occurred';
+            let errResponse = await response.json();
+            if (errResponse['error']) {
+                errMsgDetails = errResponse['error'];
+            }
+            displayError(this, 'Something went wrong --\ntry again?', errMsgDetails);
+        } else {
+            this.scene.start('presents-input', {
+                character: sprite,
+                name: this.name
+            });
         }
     }
 }

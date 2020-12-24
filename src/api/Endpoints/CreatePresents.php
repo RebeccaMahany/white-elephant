@@ -15,12 +15,9 @@ class CreatePresents extends ApiRequest
         }
 
         $store = new Store();
-        $firstPresentId = $store->createPresent($this->requestBody['first_description'], $playerId, $gameId);
-        $secondPresentId = $store->createPresent($this->requestBody['second_description'], $playerId, $gameId);
+        $store->createPresent($this->requestBody['first_description'], $playerId, $gameId);
+        $store->createPresent($this->requestBody['second_description'], $playerId, $gameId);
 
-        return [
-            'first_present_id' => $firstPresentId,
-            'second_present_id' => $secondPresentId
-        ];
+        return [];
     }
 }

@@ -6,6 +6,8 @@ use WhiteElephant\Route;
 use WhiteElephant\Endpoints\CreatePlayer;
 use WhiteElephant\Endpoints\CreatePresents;
 use WhiteElephant\Endpoints\EnterGame;
+use WhiteElephant\Endpoints\GetCurrentPlayersAndPresents;
+use WhiteElephant\Endpoints\SetPlayerSprite;
 use WhiteElephant\Endpoints\StartGame;
 use WhiteElephant\Endpoints\TakePresent;
 
@@ -35,9 +37,11 @@ $routes = [];
 // Setup
 $routes[] = new Route('/ajax/enter-game', 'POST', EnterGame::class);
 $routes[] = new Route('/ajax/create-player', 'POST', CreatePlayer::class);
+$routes[] = new Route('/ajax/set-player-sprite', 'PUT', SetPlayerSprite::class);
 $routes[] = new Route('/ajax/create-presents', 'POST', CreatePresents::class);
 $routes[] = new Route('/ajax/start-game', 'PUT', StartGame::class);
 // Game, phases 1 and 2
+$routes[] = new Route('/ajax/get-current', 'GET', GetCurrentPlayersAndPresents::class);
 $routes[] = new Route('/ajax/take-present', 'PUT', TakePresent::class);
 
 foreach ($routes as $route) {

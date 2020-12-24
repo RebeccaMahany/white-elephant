@@ -7,6 +7,7 @@ CREATE TABLE game (
 CREATE TABLE player (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT,
+    sprite TEXT,
     game_id INTEGER,
     UNIQUE(name, game_id),
     FOREIGN KEY(game_id) REFERENCES game(id)
