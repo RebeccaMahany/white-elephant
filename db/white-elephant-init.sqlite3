@@ -1,0 +1,30 @@
+CREATE TABLE game (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    game_code TEXT,
+    current_player_id INTEGER,
+    start_time TIMESTAMP,
+    UNIQUE(game_code),
+    FOREIGN KEY(current_player_id) REFERENCES player(id)
+);
+
+CREATE TABLE player (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    sprite TEXT,
+    game_id INTEGER NOT NULL,
+    UNIQUE(name, game_id),
+    FOREIGN KEY(game_id) REFERENCES game(id)
+);
+
+CREATE TABLE present (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    description TEXT NOT NULL,
+    from_player_id INTEGER NOT NULL,
+    current_player_id INTEGER NOT NULL,
+    unwrapped BOOLEAN DEFAULT 0,
+    game_id INTEGER NOT NULL,
+    UNIQUE(description, from_player_id, game_id),
+    FOREIGN KEY(game_id) REFERENCES game(id),
+    FOREIGN KEY(from_player_id) REFERENCES player(id),
+    FOREIGN KEY(current_player_id) REFERENCES player(id)
+);
