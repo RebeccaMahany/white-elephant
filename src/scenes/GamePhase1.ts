@@ -176,7 +176,12 @@ export default class GamePhase1 extends Phaser.Scene
             }
         }
 
+        await this.sleep(1000);
         this.updatePoll();
+    }
+
+    sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     async updatePoll()
@@ -291,7 +296,9 @@ export default class GamePhase1 extends Phaser.Scene
         this.rollButton = this.add.dom(width/2, height/4).createFromCache('roll-button');
         this.rollButton.addListener('click');
         this.rollButton.on('click', (event) => {
-            this.rollDice();
+            if (event.target.name === 'submitButton') {
+                this.rollDice();
+            }
         });
     }
 
@@ -323,7 +330,9 @@ export default class GamePhase1 extends Phaser.Scene
         this.endTurnButton = this.add.dom(width/2, height/4 + 60).createFromCache('end-turn-button');
         this.endTurnButton.addListener('click');
         this.endTurnButton.on('click', (event) => {
-            this.endTurn();
+            if (event.target.name === 'submitButton') {
+                this.endTurn();
+            }
         });
     }
 
@@ -403,6 +412,8 @@ export default class GamePhase1 extends Phaser.Scene
         let buttonY = pointer.y + buttonPadding;
         if (gameObject.getData('side') === 'bottom') {
             buttonY = pointer.y - buttonWidthHeight - buttonPadding;
+        } else if (gameObject.getData('side') === 'right') {
+            buttonX = pointer.x - buttonWidthHeight - buttonPadding;
         }
 
         let closeButton = this.add.rectangle(
@@ -438,9 +449,16 @@ export default class GamePhase1 extends Phaser.Scene
         // If it's my turn, add a button to take the present
         if (this.myTurn && this.allowedToTakePresent) {
             const takeButtonWidth = popoverWidth/5;
+
+            let takeX = pointer.x + popoverWidth - takeButtonWidth - buttonPadding;
+            let takeY = pointer.y + popoverHeight - buttonWidthHeight - buttonPadding;
+            if (gameObject.getData('side') === 'right') {
+                takeX = pointer.x - takeButtonWidth - buttonPadding;
+            }
+
             let takeButton = this.add.rectangle(
-                pointer.x + popoverWidth - takeButtonWidth - buttonPadding,
-                pointer.y + popoverHeight - buttonWidthHeight - buttonPadding,
+                takeX,
+                takeY,
                 takeButtonWidth,
                 buttonWidthHeight,
                 0x222222,
